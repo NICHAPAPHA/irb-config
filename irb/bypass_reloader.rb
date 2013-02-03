@@ -1,7 +1,14 @@
 module IRB
   module BypassReloader
     def self.setup
-      ActionDispatch::Reloader.class_eval do
+      rails_version  = Rails::VERSION::STRING
+      reloader_class = if rails_version[0..2] =~ /3\.[^0]/
+                         ActionDispatch::Reloader
+                       else
+                         ActionDispatch::Callbacks
+                       end
+
+      reloader_class.class_eval do
         def call(env)
           @app.call(env)
         end
@@ -18,3 +25,4 @@ module IRB
     setup if defined?(::Rails)
   end
 end
+
